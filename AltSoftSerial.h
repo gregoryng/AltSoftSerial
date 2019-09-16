@@ -47,7 +47,8 @@ public:
 	static void begin(uint32_t baud) { init((ALTSS_BASE_FREQ + baud / 2) / baud); }
 	static void end();
 	int peek();
-	int read();
+	int read(void);
+	int read(uint32_t* ptime);
 	int available();
 	int availableForWrite();
 #if ARDUINO >= 100

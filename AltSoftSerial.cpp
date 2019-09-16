@@ -51,6 +51,7 @@ static volatile uint8_t rx_buffer_head;
 static volatile uint8_t rx_buffer_tail;
 #define RX_BUFFER_SIZE 80
 static volatile uint8_t rx_buffer[RX_BUFFER_SIZE];
+static volatile uint32_t rx_time_buffer[RX_BUFFER_SIZE]; // timestamp buffer
 
 static volatile uint8_t tx_state=0;
 static uint8_t tx_byte;
@@ -224,6 +225,7 @@ ISR(CAPTURE_INTERRUPT)
 	uint8_t state, bit, head;
 	uint16_t capture, target;
 	uint16_t offset, offset_overflow;
+    uint32_t timestamp;
 
 	capture = GET_INPUT_CAPTURE();
 	bit = rx_bit;
@@ -254,9 +256,11 @@ ISR(CAPTURE_INTERRUPT)
 			state++;
 			if (state >= 9) {
 				DISABLE_INT_COMPARE_B();
+                timestamp = micros();
 				head = rx_buffer_head + 1;
 				if (head >= RX_BUFFER_SIZE) head = 0;
 				if (head != rx_buffer_tail) {
+                    rx_time_buffer[head] = timestamp;
 					rx_buffer[head] = rx_byte;
 					rx_buffer_head = head;
 				}
@@ -295,9 +299,12 @@ ISR(COMPARE_B_INTERRUPT)
 	rx_bit = 0;
 }
 
-
-
 int AltSoftSerial::read(void)
+{
+    return read(0);
+}
+
+int AltSoftSerial::read(uint32_t* ptime)
 {
 	uint8_t head, tail, out;
 
@@ -306,9 +313,14 @@ int AltSoftSerial::read(void)
 	if (head == tail) return -1;
 	if (++tail >= RX_BUFFER_SIZE) tail = 0;
 	out = rx_buffer[tail];
+    
+    if (ptime)
+        *ptime = rx_time_buffer[tail];
+    
 	rx_buffer_tail = tail;
 	return out;
 }
+
 
 int AltSoftSerial::peek(void)
 {
