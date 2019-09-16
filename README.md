@@ -7,3 +7,8 @@ during data AltSoftSerial data transmission and reception.
 http://www.pjrc.com/teensy/td_libs_AltSoftSerial.html
 
 ![AltSoftSerial on Teensy 2.0](http://www.pjrc.com/teensy/td_libs_AltSoftSerial_2.jpg)
+
+
+## UTIG Modifications
+
+UTIG modifications add precise byte timing required for Arduino-based ELSA.
